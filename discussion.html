@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Discussion - Scorecard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-logo" aria-hidden="true">
+      <img src="white WEL Logo.png" alt="WEL logo" class="site-logo-img" />
+    </div>
+    <div class="user-info" id="userInfo"></div>
+  </header>
+  <div class="container">
+    <div class="page-header">
+      <h1>Discussion</h1>
+      <div class="page-actions">
+        <button onclick="showUsersModal()" class="nav-btn">Users</button>
+        <a href="dashboard.html" class="nav-btn">Back</a>
+        <button onclick="window.scorecardLogout()" class="logout-btn">Logout</button>
+      </div>
+    </div>
+    <nav class="dashboard-nav">
+      <a href="dashboard.html" class="nav-link">Dashboard</a>
+      <a href="index.html" class="nav-link">Scorecard</a>
+      <a href="discussion.html" class="nav-link active">Discussion</a>
+      <a href="calendar.html" class="nav-link">Events</a>
+    </nav>
+    <div class="post-form-container">
+      <h3>Share Your Thoughts</h3>
+      <form id="postForm" class="post-form">
+        <textarea id="postContent" placeholder="What's on your mind?" rows="4" required></textarea>
+        <div class="post-form-actions">
+          <input type="file" id="postMedia" accept="image/*,video/*" class="file-input" />
+          <button type="submit" class="btn-primary">Post</button>
+        </div>
+      </form>
+    </div>
+    <div id="postsContainer" class="posts-container">
+      <!-- Posts will be loaded here -->
+    </div>
+  </div>
+  
+  <!-- Users Modal -->
+  <div id="usersModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Users</h2>
+        <span class="close" onclick="closeUsersModal()">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div id="usersList" class="users-list"></div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Messages Modal -->
+  <div id="messagesModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="messageUserName">Messages</h2>
+        <span class="close" onclick="closeMessagesModal()">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div id="messagesContainer" class="messages-container"></div>
+        <form id="messageForm" class="message-form">
+          <input type="text" id="messageInput" placeholder="Type a message..." required />
+          <button type="submit" class="btn-primary">Send</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <script src="auth.js"></script>
+  <script src="discussion.js"></script>
+  <script src="messages.js"></script>
+</body>
+</html>

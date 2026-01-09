@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Scorecard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-logo" aria-hidden="true">
+      <!-- Use project's PNG white WEL logo -->
+      <img src="white WEL Logo.png" alt="WEL logo" class="site-logo-img" />
+    </div>
+    <div class="user-info" id="userInfo"></div>
+  </header>
+  <div class="container">
+    <div class="page-header">
+      <h1>Scorecard</h1>
+      <div class="page-actions">
+        <a href="dashboard.html" class="nav-btn">Back</a>
+      </div>
+    </div>
+    <div class="scorecard-welcome" id="welcomeSection">
+      <h2 id="welcomeMessage">Welcome!</h2>
+      <button id="buildScorecardBtn" class="btn-primary btn-large">Build a Scorecard</button>
+    </div>
+    
+    <div class="category-selection" id="categorySection" style="display:none;">
+      <div class="category-header">
+        <h2>Select Your Categories</h2>
+        <p>Choose 3-5 categories from the list below or create your own custom categories</p>
+      </div>
+      
+      <div class="categories-grid">
+        <div class="category-item" data-category="Health and Well-Being">
+          <input type="checkbox" id="cat1" value="Health and Well-Being">
+          <label for="cat1">Health and Well-Being</label>
+        </div>
+        <div class="category-item" data-category="Relationships">
+          <input type="checkbox" id="cat2" value="Relationships">
+          <label for="cat2">Relationships</label>
+        </div>
+        <div class="category-item" data-category="Finances">
+          <input type="checkbox" id="cat3" value="Finances">
+          <label for="cat3">Finances</label>
+        </div>
+        <div class="category-item" data-category="Work/Life Balance">
+          <input type="checkbox" id="cat4" value="Work/Life Balance">
+          <label for="cat4">Work/Life Balance</label>
+        </div>
+        <div class="category-item" data-category="Competencies">
+          <input type="checkbox" id="cat5" value="Competencies">
+          <label for="cat5">Competencies</label>
+        </div>
+        <div class="category-item" data-category="Mental and Emotional Health">
+          <input type="checkbox" id="cat6" value="Mental and Emotional Health">
+          <label for="cat6">Mental and Emotional Health</label>
+        </div>
+        <div class="category-item" data-category="Clients and Customers">
+          <input type="checkbox" id="cat7" value="Clients and Customers">
+          <label for="cat7">Clients and Customers</label>
+        </div>
+        <div class="category-item" data-category="Delegation and Teamwork">
+          <input type="checkbox" id="cat8" value="Delegation and Teamwork">
+          <label for="cat8">Delegation and Teamwork</label>
+        </div>
+        <div class="category-item" data-category="Social Impact">
+          <input type="checkbox" id="cat9" value="Social Impact">
+          <label for="cat9">Social Impact</label>
+        </div>
+        <div class="category-item" data-category="Personal and Spiritual Growth">
+          <input type="checkbox" id="cat10" value="Personal and Spiritual Growth">
+          <label for="cat10">Personal and Spiritual Growth</label>
+        </div>
+        <div class="category-item" data-category="Personal Brand">
+          <input type="checkbox" id="cat11" value="Personal Brand">
+          <label for="cat11">Personal Brand</label>
+        </div>
+      </div>
+      
+      <div class="custom-category-section">
+        <h3>Create Your Own Category</h3>
+        <div class="custom-category-input">
+          <input type="text" id="customCategoryInput" placeholder="Enter custom category name">
+          <button id="addCustomBtn" class="btn-secondary">+ Add Custom</button>
+        </div>
+        <div id="customCategoriesList" class="custom-categories-list"></div>
+      </div>
+      
+      <div class="category-actions">
+        <button id="backToWelcomeBtn" class="btn-secondary">Back</button>
+        <button id="continueBtn" class="btn-primary btn-large">Continue</button>
+      </div>
+    </div>
+    
+    <div class="category-details" id="categoryDetailsSection" style="display:none;">
+      <div class="category-progress">
+        <span id="categoryProgress">Category 1 of 3</span>
+      </div>
+      
+      <div class="category-detail-card">
+        <h2 id="currentCategoryName">Category Name</h2>
+        
+        <div class="detail-field">
+          <label for="goalsInput">What are your goals in this category? <span class="required">(required)</span></label>
+          <textarea id="goalsInput" rows="4" placeholder="Describe your goals..."></textarea>
+        </div>
+        
+        <div class="detail-field">
+          <label for="baselineInput">Where are you currently? (Baseline) <span class="required">(required)</span></label>
+          <textarea id="baselineInput" rows="4" placeholder="Describe where you are now..."></textarea>
+        </div>
+        
+        <div class="detail-field">
+          <label for="obstaclesInput">What obstacles keep you from your goals? <span class="required">(required)</span></label>
+          <textarea id="obstaclesInput" rows="4" placeholder="List your obstacles..."></textarea>
+        </div>
+        
+        <div class="detail-field">
+          <label for="stepsInput">What steps will you take to achieve success? <span class="required">(required)</span></label>
+          <textarea id="stepsInput" rows="4" placeholder="List your action steps..."></textarea>
+        </div>
+        
+        <div class="category-detail-actions">
+          <button id="backToCategoriesBtn" class="btn-secondary">Back to Categories</button>
+          <div class="nav-buttons">
+            <button id="prevCategoryBtn" class="btn-secondary" style="display:none;">Previous</button>
+            <button id="nextCategoryBtn" class="btn-primary">Next Category</button>
+            <button id="finishBtn" class="btn-primary btn-large" style="display:none;">Finish & Save</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="success-page" id="successPageSection" style="display:none;">
+      <div class="success-content">
+        <div class="success-icon">✓</div>
+        <h2>Success!</h2>
+        <p>You created a scorecard</p>
+        <button id="viewScorecardBtn" class="btn-primary btn-large">View My Scorecard</button>
+      </div>
+    </div>
+    
+    <div class="scorecard-view" id="scorecardViewSection" style="display:none;">
+      <div class="scorecard-header">
+        <h2>Your Scorecard</h2>
+        <p>Rate your current progress in each category (0-5, where 5 is success)</p>
+      </div>
+      
+      <div class="scorecard-categories" id="scorecardCategories">
+        <!-- Categories will be inserted here dynamically -->
+      </div>
+      
+      <div class="scorecard-submit-container" style="text-align:center; margin-top:40px;">
+        <button id="viewHistoryFromScorecardBtn" class="btn-secondary" style="margin-right:12px;">View Full History Graph</button>
+        <button id="submitScorecard" class="btn-primary btn-large">Submit & View Results</button>
+      </div>
+    </div>
+    
+    <div class="scorecard-results" id="scorecardResultsSection" style="display:none;">
+      <div class="results-header">
+        <h2>Your Scorecard Results</h2>
+      </div>
+      
+      <div class="results-chart" id="resultsChart">
+        <div class="average-score-display">
+          <div class="average-label">Overall Average</div>
+          <div class="average-value" id="averageScore">0.0</div>
+          <div class="average-subtitle">out of 5.0</div>
+        </div>
+        <div class="category-scores" id="categoryScoresList">
+          <!-- Individual category scores will be displayed here -->
+        </div>
+      </div>
+      
+      <div class="history-section">
+        <h3>Score History</h3>
+        <button id="viewHistoryBtn" class="btn-secondary">View Full History Graph</button>
+      </div>
+      
+      <div class="results-actions">
+        <button id="backToScorecardBtn" class="btn-secondary">Back to Scorecard</button>
+        <button id="backToWelcomeFromResults" class="btn-primary">Done</button>
+      </div>
+    </div>
+    
+    <div class="history-graph" id="historyGraphSection" style="display:none;">
+      <div class="history-header">
+        <h2>Scorecard History</h2>
+        <p>Track your progress over time</p>
+      </div>
+      
+      <div class="graph-container">
+        <canvas id="historyCanvas"></canvas>
+        <div id="historyList" class="history-list">
+          <!-- History entries will be displayed here -->
+        </div>
+      </div>
+      
+      <div class="history-actions">
+        <button id="backToScorecardFromHistoryBtn" class="btn-secondary">Back to Scorecard</button>
+        <button id="backToResultsBtn" class="btn-primary">Back to Results</button>
+      </div>
+    </div>
+  </div>
+  <script src="auth.js?v=26"></script>
+  <script src="app.js?v=26"></script>
+</body>
+</html>

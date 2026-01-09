@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Calendar - Scorecard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-logo" aria-hidden="true">
+      <img src="white WEL Logo.png" alt="WEL logo" class="site-logo-img" />
+    </div>
+    <div class="user-info" id="userInfo"></div>
+  </header>
+  <div class="container">
+    <div class="page-header">
+      <h1>Events</h1>
+      <div class="page-actions">
+        <a href="dashboard.html" class="nav-btn">Back</a>
+        <button onclick="window.scorecardLogout()" class="logout-btn">Logout</button>
+      </div>
+    </div>
+    <nav class="dashboard-nav">
+      <a href="dashboard.html" class="nav-link">Dashboard</a>
+      <a href="index.html" class="nav-link">Scorecard</a>
+      <a href="discussion.html" class="nav-link">Discussion</a>
+      <a href="calendar.html" class="nav-link active">Events</a>
+    </nav>
+    <div id="adminEventForm" class="admin-event-form" style="display:none;">
+      <h3>Add Event (Admin Only)</h3>
+      <form id="eventForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="eventTitle">Event Title</label>
+            <input type="text" id="eventTitle" required />
+          </div>
+          <div class="form-group">
+            <label for="eventDate">Date</label>
+            <input type="date" id="eventDate" required />
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="eventDescription">Description</label>
+          <textarea id="eventDescription" rows="3"></textarea>
+        </div>
+        <button type="submit" class="btn-primary">Add Event</button>
+      </form>
+    </div>
+    <div class="calendar-wrapper">
+      <div class="mini-calendar" id="miniCalendar"></div>
+      <div id="eventsContainer" class="events-container"></div>
+    </div>
+  </div>
+  <script src="auth.js"></script>
+  <script src="calendar.js"></script>
+</body>
+</html>

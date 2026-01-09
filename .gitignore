@@ -1,0 +1,12 @@
+# Logs
+server.log
+nohup.out
+
+# Backup files
+*.bak
+
+# System files
+.DS_Store
+
+# Scripts (not needed for deployment)
+start.sh

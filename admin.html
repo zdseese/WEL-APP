@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin - Scorecard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-logo" aria-hidden="true">
+      <img src="white WEL Logo.png" alt="WEL logo" class="site-logo-img" />
+    </div>
+  </header>
+  <div class="container">
+    <div class="admin-header">
+      <h1>User Management</h1>
+      <div class="admin-actions">
+        <button onclick="window.location.href='dashboard.html'" class="btn-secondary">Back to Dashboard</button>
+        <button onclick="window.scorecardLogout()" class="logout-btn">Logout</button>
+      </div>
+    </div>
+    <div class="admin-stats" id="adminStats">
+      <div class="stat-card">
+        <div class="stat-value" id="totalUsers">0</div>
+        <div class="stat-label">Total Users</div>
+      </div>
+    </div>
+    <div class="user-table-container">
+      <table class="user-table">
+        <thead>
+          <tr>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="userTableBody">
+          <!-- Users will be loaded here -->
+        </tbody>
+      </table>
+    </div>
+    <div id="passwordModal" class="modal" style="display:none;">
+      <div class="modal-content">
+        <h3>Reset Password</h3>
+        <p id="modalUsername"></p>
+        <form id="resetPasswordForm">
+          <div class="form-group">
+            <label for="newAdminPassword">New Password</label>
+            <input type="password" id="newAdminPassword" required minlength="6" />
+          </div>
+          <div id="resetError" class="error-message"></div>
+          <div style="display:flex;gap:10px;margin-top:16px;">
+            <button type="submit" class="btn-primary">Reset Password</button>
+            <button type="button" onclick="window.closePasswordModal()" class="btn-secondary">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <script src="auth.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

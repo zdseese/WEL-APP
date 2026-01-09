@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Profile - Scorecard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-logo" aria-hidden="true">
+      <img src="white WEL Logo.png" alt="WEL logo" class="site-logo-img" />
+    </div>
+    <div class="user-info" id="userInfo"></div>
+  </header>
+  <div class="container">
+    <div class="page-header">
+      <h1>My Profile</h1>
+      <div class="page-actions">
+        <a href="dashboard.html" class="nav-btn">Back</a>
+        <a href="admin.html" id="adminLinkProfile" class="nav-btn" style="display:none;">User Management</a>
+        <button onclick="window.scorecardLogout()" class="logout-btn">Logout</button>
+      </div>
+    </div>
+    <div class="profile-container">
+      <div class="profile-picture-section">
+        <img id="profilePicture" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%23e0e0e0' width='100' height='100'/%3E%3Ccircle cx='50' cy='30' r='15' fill='%23999'/%3E%3Cpath d='M 20 60 Q 20 50 50 50 Q 80 50 80 60 L 80 100 L 20 100 Z' fill='%23999'/%3E%3C/svg%3E" alt="Profile Picture" class="profile-pic" />
+        <div class="pic-upload">
+          <input type="file" id="pictureUpload" accept="image/*" class="file-input-hidden" />
+          <button type="button" onclick="document.getElementById('pictureUpload').click()" class="btn-secondary">Change Photo</button>
+        </div>
+      </div>
+      <form id="profileForm" class="profile-form">
+        <div class="form-group">
+          <label for="displayName">Full Name</label>
+          <input type="text" id="displayName" placeholder="Enter your name" />
+        </div>
+        <div class="form-group">
+          <label for="profileBio">Bio</label>
+          <textarea id="profileBio" placeholder="Tell us about yourself" rows="4"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="profileEmail">Email</label>
+          <input type="email" id="profileEmail" disabled />
+        </div>
+        <button type="submit" class="btn-primary">Save Profile</button>
+      </form>
+      <hr style="margin:30px 0;border:none;border-top:1px solid #ddd;">
+      <h3>Change Credentials</h3>
+      <form id="credentialsForm" class="profile-form">
+        <div class="form-group">
+          <label for="currentPassword">Current Password</label>
+          <input type="password" id="currentPassword" placeholder="Enter your current password" required />
+        </div>
+        <div class="form-group">
+          <label for="newUsername">New Username</label>
+          <input type="text" id="newUsername" placeholder="Leave blank to keep current" minlength="3" />
+        </div>
+        <div class="form-group">
+          <label for="newPassword">New Password</label>
+          <input type="password" id="newPassword" placeholder="Leave blank to keep current" minlength="6" />
+        </div>
+        <div class="form-group">
+          <label for="confirmNewPassword">Confirm New Password</label>
+          <input type="password" id="confirmNewPassword" placeholder="Confirm new password" minlength="6" />
+        </div>
+        <div id="credentialsError" class="error-message"></div>
+        <button type="submit" class="btn-primary">Update Credentials</button>
+      </form>
+    </div>
+  </div>
+  <script src="auth.js"></script>
+  <script src="profile.js"></script>
+</body>
+</html>
