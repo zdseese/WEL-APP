@@ -1,0 +1,22 @@
+{
+  "users": {
+    "admin": {
+      "username": "admin",
+      "password": "5598e6ba923e29702a96887fd1130be11f5a1b990e2eb28ec6fdf3740b0c76ad",
+      "email": "admin@scorecard.com",
+      "createdAt": "2026-01-20T17:43:42.802354",
+      "subscription": {
+        "plan": "free",
+        "status": "active",
+        "stripeCustomerId": null,
+        "stripeSubscriptionId": null,
+        "currentPeriodEnd": null
+      }
+    }
+  },
+  "profiles": {},
+  "scorecards": {},
+  "discussions": {},
+  "calendar": {},
+  "messages": {}
+}

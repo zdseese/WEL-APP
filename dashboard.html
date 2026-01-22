@@ -26,6 +26,24 @@
     <div class="dashboard-welcome">
       <h2 id="welcomeMsg">Welcome!</h2>
       <p>Manage your scorecard, connect with others, and stay organized.</p>
+      
+      <!-- Subscription Status Card -->
+      <div id="subscriptionCard" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px; margin-top: 20px; display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+          <div>
+            <h3 style="margin: 0 0 8px 0; font-size: 1.3em;">
+              <span id="subPlanName">Free Plan</span>
+              <span id="subStatusBadge" style="background: rgba(255,255,255,0.3); padding: 4px 12px; border-radius: 20px; font-size: 0.7em; margin-left: 10px;">Active</span>
+            </h3>
+            <p id="subDescription" style="margin: 0; opacity: 0.9;">Basic progress tracking features</p>
+            <p id="subPeriodInfo" style="margin: 8px 0 0 0; font-size: 0.9em; opacity: 0.8;"></p>
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <a id="upgradeBtn" href="subscribe.html" style="background: white; color: #667eea; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; white-space: nowrap;">Upgrade Plan</a>
+            <button id="manageSubBtn" onclick="manageSubscription()" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 12px 24px; border-radius: 8px; font-weight: bold; cursor: pointer; white-space: nowrap; display: none;">Manage</button>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="dashboard-grid">
       <div class="dashboard-card">

@@ -25,6 +25,23 @@
         <div class="stat-value" id="totalUsers">0</div>
         <div class="stat-label">Total Users</div>
       </div>
+      <div class="stat-card">
+        <div class="stat-value" id="freeUsers">0</div>
+        <div class="stat-label">Free Plan</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="basicUsers">0</div>
+        <div class="stat-label">Basic Plan</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="proUsers">0</div>
+        <div class="stat-label">Pro Plan</div>
+      </div>
+    </div>
+    <div class="admin-controls">
+      <input type="text" id="userSearch" placeholder="Search users..." class="search-input" />
+      <button id="refreshBtn" class="btn-secondary">Refresh</button>
+      <button id="exportBtn" class="btn-primary">Export CSV</button>
     </div>
     <div class="user-table-container">
       <table class="user-table">
@@ -32,11 +49,15 @@
           <tr>
             <th>Username</th>
             <th>Email</th>
-            <th>Role</th>
-            <th>Actions</th>
+            <th>Subscription Plan</th>
+            <th>Status</th>
+            <th>Organization</th>
+            <th>Job Title</th>
+            <th>Phone</th>
+            <th>Joined</th>
           </tr>
         </thead>
-        <tbody id="userTableBody">
+        <tbody id="usersTableBody">
           <!-- Users will be loaded here -->
         </tbody>
       </table>

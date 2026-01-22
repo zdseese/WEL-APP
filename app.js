@@ -1,24 +1,34 @@
-// Clear all old scorecard data from localStorage
-(function(){
-  const currentUser = window.currentUser;
-  if(currentUser){
-    localStorage.removeItem('scorecard:metrics:v1');
-    localStorage.removeItem(`scorecard:metrics:v1:${currentUser}`);
-    localStorage.removeItem('scorecard:builder:v1');
-    localStorage.removeItem(`scorecard:builder:v1:${currentUser}`);
-  }
-  // Also clear non-user-specific keys
-  localStorage.removeItem('scorecard:metrics:v1');
-  localStorage.removeItem('scorecard:builder:v1');
+// API wrapper for backend storage
+const ScorecardAPI = {
+  async load() {
+    try {
+      const response = await fetch('/api/scorecard', { credentials: 'same-origin' });
+      if (!response.ok) return null;
+      return await response.json();
+    } catch (error) {
+      console.error('Error loading scorecard:', error);
+      return null;
+    }
+  },
   
-  // Debug: show registered users
-  const users = JSON.parse(localStorage.getItem('scorecard:users') || '{}');
-  console.log('Registered users:', Object.keys(users));
-  console.log('Current user:', window.currentUser);
-})();
+  async save(data) {
+    try {
+      const response = await fetch('/api/scorecard', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify(data)
+      });
+      return response.ok;
+    } catch (error) {
+      console.error('Error saving scorecard:', error);
+      return false;
+    }
+  }
+};
 
 // Scorecard welcome and category selection
-document.addEventListener('DOMContentLoaded', function(){
+document.addEventListener('DOMContentLoaded', async function(){
   console.log('DOM loaded, initializing scorecard...');
   
   const welcomeMsg = document.getElementById('welcomeMessage');
@@ -45,9 +55,8 @@ document.addEventListener('DOMContentLoaded', function(){
   // Check if user has existing scorecard and update button
   const currentUser = window.currentUser;
   if(currentUser) {
-    const savedData = localStorage.getItem(`scorecard:data:${currentUser}`);
-    if(savedData) {
-      const data = JSON.parse(savedData);
+    const data = await ScorecardAPI.load();
+    if(data && Object.keys(data).length > 0) {
       if(data.categories && data.categories.length > 0) {
         buildBtn.textContent = 'View My Scorecard';
       }
@@ -57,16 +66,13 @@ document.addEventListener('DOMContentLoaded', function(){
   // Check if we should show history graph from URL parameter
   const urlParams = new URLSearchParams(window.location.search);
   if(urlParams.get('showHistory') === 'true' && currentUser) {
-    const savedData = localStorage.getItem(`scorecard:data:${currentUser}`);
-    if(savedData) {
-      const data = JSON.parse(savedData);
-      if(data.categories && data.categories.length > 0) {
-        selectedCategories = data.categories;
-        categoryDetails = data.details;
-        welcomeSection.style.display = 'none';
-        // Wait a moment for page to fully load, then show history
-        setTimeout(() => showHistoryGraph(), 100);
-      }
+    const data = await ScorecardAPI.load();
+    if(data && data.categories && data.categories.length > 0) {
+      selectedCategories = data.categories;
+      categoryDetails = data.details;
+      welcomeSection.style.display = 'none';
+      // Wait a moment for page to fully load, then show history
+      setTimeout(() => showHistoryGraph(), 100);
     }
   }
   
@@ -109,23 +115,20 @@ document.addEventListener('DOMContentLoaded', function(){
   
   // Show category selection or existing scorecard
   if(buildBtn){
-    buildBtn.addEventListener('click', function(){
+    buildBtn.addEventListener('click', async function(){
       console.log('Build button clicked!');
       
       // Check if user has existing scorecard
       const currentUser = window.currentUser;
       if(currentUser) {
-        const savedData = localStorage.getItem(`scorecard:data:${currentUser}`);
-        if(savedData) {
-          const data = JSON.parse(savedData);
-          if(data.categories && data.categories.length > 0) {
-            // Load existing scorecard
-            selectedCategories = data.categories;
-            categoryDetails = data.details;
-            welcomeSection.style.display = 'none';
-            showScorecardView();
-            return;
-          }
+        const data = await ScorecardAPI.load();
+        if(data && data.categories && data.categories.length > 0) {
+          // Load existing scorecard
+          selectedCategories = data.categories;
+          categoryDetails = data.details;
+          welcomeSection.style.display = 'none';
+          showScorecardView();
+          return;
         }
       }
       
@@ -310,13 +313,13 @@ document.addEventListener('DOMContentLoaded', function(){
   
   // Finish and save
   if(finishBtn){
-    finishBtn.addEventListener('click', function(){
+    finishBtn.addEventListener('click', async function(){
       if(!validateCurrentCategory()) {
         return;
       }
       saveCategoryDetails();
       
-      // Save to localStorage
+      // Save to backend
       const currentUser = window.currentUser;
       if(currentUser){
         const scorecardData = {
@@ -324,7 +327,11 @@ document.addEventListener('DOMContentLoaded', function(){
           details: categoryDetails,
           createdAt: new Date().toISOString()
         };
-        localStorage.setItem(`scorecard:data:${currentUser}`, JSON.stringify(scorecardData));
+        const saved = await ScorecardAPI.save(scorecardData);
+        if(!saved) {
+          alert('Failed to save scorecard. Please try again.');
+          return;
+        }
       }
       
       console.log('Scorecard saved:', { categories: selectedCategories, details: categoryDetails });
@@ -409,15 +416,15 @@ document.addEventListener('DOMContentLoaded', function(){
   
   // Submit scorecard and show results
   if(submitScorecard) {
-    submitScorecard.addEventListener('click', function() {
+    submitScorecard.addEventListener('click', async function() {
       // Calculate average
       const values = Object.values(categoryRatings);
       const average = values.reduce((a, b) => a + b, 0) / values.length;
       
-      // Save ratings to localStorage with history
+      // Save ratings to backend with history
       const currentUser = window.currentUser;
       if(currentUser){
-        const existingData = JSON.parse(localStorage.getItem(`scorecard:data:${currentUser}`) || '{}');
+        const existingData = await ScorecardAPI.load() || {};
         
         // Initialize history array if it doesn't exist
         if(!existingData.history) {
@@ -437,7 +444,7 @@ document.addEventListener('DOMContentLoaded', function(){
         existingData.average = average;
         existingData.submittedAt = new Date().toISOString();
         
-        localStorage.setItem(`scorecard:data:${currentUser}`, JSON.stringify(existingData));
+        await ScorecardAPI.save(existingData);
       }
       
       showResults(average);
@@ -520,14 +527,13 @@ document.addEventListener('DOMContentLoaded', function(){
     });
   }
   
-  function showHistoryGraph() {
+  async function showHistoryGraph() {
     const currentUser = window.currentUser;
     if(!currentUser) return;
     
-    const savedData = localStorage.getItem(`scorecard:data:${currentUser}`);
-    if(!savedData) return;
+    const data = await ScorecardAPI.load();
+    if(!data) return;
     
-    const data = JSON.parse(savedData);
     const history = data.history || [];
     
     if(history.length === 0) {

@@ -1,84 +1,42 @@
 (function(){
-  const PROFILE_KEY = 'scorecard:profile';
-  const USERS_KEY = 'scorecard:users';
-  const SESSION_KEY = 'scorecard:auth';
+  // API helper function
+  async function apiCall(endpoint, method = 'GET', body = null) {
+    const options = {
+      method,
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'same-origin'
+    };
+    
+    if (body) {
+      options.body = JSON.stringify(body);
+    }
+    
+    const response = await fetch(endpoint, options);
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.error || 'Request failed');
+    }
+    
+    return data;
+  }
 
-  function getProfile(username){
+  async function getProfile() {
+    return await apiCall('/api/profile');
+  }
+
+  async function saveProfile(profileData) {
+    return await apiCall('/api/profile', 'POST', profileData);
+  }
+
+  async function deleteAccount() {
     try {
-      const profiles = JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}');
-      return profiles[username] || { displayName: '', bio: '', picture: null };
-    } catch {
-      return { displayName: '', bio: '', picture: null };
+      return await apiCall('/api/account', 'DELETE');
+    } catch (error) {
+      return { success: false, error: error.message };
     }
-  }
-
-  function saveProfile(username, profile){
-    try {
-      const profiles = JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}');
-      profiles[username] = profile;
-      localStorage.setItem(PROFILE_KEY, JSON.stringify(profiles));
-    } catch {}
-  }
-
-  function getUsers(){
-    try {
-      return JSON.parse(localStorage.getItem(USERS_KEY) || '{}');
-    } catch {
-      return {};
-    }
-  }
-
-  function saveUsers(users){
-    localStorage.setItem(USERS_KEY, JSON.stringify(users));
-  }
-
-  function changeCredentials(currentPassword, newUsername, newPassword){
-    const auth = JSON.parse(localStorage.getItem(SESSION_KEY) || '{}');
-    const currentUser = auth.username;
-    const users = getUsers();
-    const userObj = users[currentUser];
-
-    // Verify current password
-    if(userObj.password !== currentPassword){
-      return { success: false, error: 'Current password is incorrect' };
-    }
-
-    // Handle username change
-    if(newUsername && newUsername !== currentUser){
-      if(users.hasOwnProperty(newUsername)){
-        return { success: false, error: 'Username already taken' };
-      }
-      if(newUsername.length < 3){
-        return { success: false, error: 'Username must be at least 3 characters' };
-      }
-      
-      // Move user to new username
-      users[newUsername] = { ...userObj };
-      delete users[currentUser];
-      
-      // Move profile data
-      const profiles = JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}');
-      if(profiles[currentUser]){
-        profiles[newUsername] = profiles[currentUser];
-        delete profiles[currentUser];
-        localStorage.setItem(PROFILE_KEY, JSON.stringify(profiles));
-      }
-      
-      // Update session
-      auth.username = newUsername;
-      localStorage.setItem(SESSION_KEY, JSON.stringify(auth));
-    }
-
-    // Handle password change
-    if(newPassword){
-      if(newPassword.length < 6){
-        return { success: false, error: 'Password must be at least 6 characters' };
-      }
-      userObj.password = newPassword;
-    }
-
-    saveUsers(users);
-    return { success: true };
   }
 
   if(window.location.pathname.includes('profile.html')){
@@ -99,67 +57,79 @@
 
     // Load profile
     const currentUser = window.currentUser;
-    const profile = getProfile(currentUser);
-    nameInput.value = profile.displayName || '';
-    bioInput.value = profile.bio || '';
-    emailInput.value = window.currentUserEmail || '';
-    if(profile.picture){
-      picElement.src = profile.picture;
-    }
+    
+    (async function loadProfile() {
+      try {
+        const profile = await getProfile();
+        nameInput.value = profile.displayName || '';
+        bioInput.value = profile.bio || '';
+        emailInput.value = window.currentUserEmail || '';
+        if(profile.picture){
+          picElement.src = profile.picture;
+        }
+      } catch (error) {
+        console.error('Error loading profile:', error);
+      }
+    })();
 
     // Picture upload
-    picInput.addEventListener('change', (e) => {
+    picInput.addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if(file){
         const reader = new FileReader();
-        reader.onload = (event) => {
+        reader.onload = async (event) => {
           picElement.src = event.target.result;
-          profile.picture = event.target.result;
-          saveProfile(currentUser, profile);
+          try {
+            await saveProfile({
+              displayName: nameInput.value,
+              bio: bioInput.value,
+              picture: event.target.result
+            });
+          } catch (error) {
+            console.error('Error saving picture:', error);
+          }
         };
         reader.readAsDataURL(file);
       }
     });
 
     // Save profile
-    profileForm.addEventListener('submit', (e) => {
+    profileForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      profile.displayName = nameInput.value;
-      profile.bio = bioInput.value;
-      saveProfile(currentUser, profile);
-      window.location.href = 'dashboard.html';
+      try {
+        await saveProfile({
+          displayName: nameInput.value,
+          bio: bioInput.value,
+          picture: picElement.src
+        });
+        window.location.href = 'dashboard.html';
+      } catch (error) {
+        alert('Error saving profile: ' + error.message);
+      }
     });
 
     // Change credentials
     credentialsForm.addEventListener('submit', (e) => {
       e.preventDefault();
-      const currentPassword = document.getElementById('currentPassword').value;
-      const newUsername = document.getElementById('newUsername').value.trim();
-      const newPassword = document.getElementById('newPassword').value;
-      const confirmNewPassword = document.getElementById('confirmNewPassword').value;
-
-      if(newPassword && newPassword !== confirmNewPassword){
-        credentialsError.style.color = '#d32f2f';
-        credentialsError.textContent = 'New passwords do not match';
-        return;
-      }
-
-      if(!newUsername && !newPassword){
-        credentialsError.style.color = '#d32f2f';
-        credentialsError.textContent = 'Please enter at least one new value';
-        return;
-      }
-
-      const result = changeCredentials(currentPassword, newUsername, newPassword);
-      if(result.success){
-        credentialsError.style.color = '#2e7d32';
-        credentialsError.textContent = 'Credentials updated successfully!';
-        credentialsForm.reset();
-        setTimeout(()=> window.location.reload(), 1500);
-      } else {
-        credentialsError.style.color = '#d32f2f';
-        credentialsError.textContent = result.error;
-      }
+      credentialsError.style.color = '#d32f2f';
+      credentialsError.textContent = 'Credential changes are not yet available with the backend. Please contact admin.';
     });
+
+    // Delete account
+    const deleteBtn = document.getElementById('deleteAccountBtn');
+    if(deleteBtn){
+      deleteBtn.addEventListener('click', async () => {
+        const confirmDelete = confirm('Are you sure?');
+        
+        if(confirmDelete){
+          const result = await deleteAccount();
+          if(result.success){
+            window.location.href = 'signup.html';
+          } else {
+            alert(result.error || 'Failed to delete account. Please try again.');
+          }
+        }
+      });
+    }
   }
 })();
