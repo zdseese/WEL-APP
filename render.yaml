@@ -2,13 +2,12 @@ services:
   - type: web
     name: wel-app
     env: python
-    region: oregon
     plan: free
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn server:app --bind 0.0.0.0:$PORT --workers 1 --timeout 120
+    startCommand: gunicorn server:app
     envVars:
       - key: PYTHON_VERSION
-        value: 3.9.20
+        value: 3.9.19
       - key: STRIPE_SECRET_KEY
         sync: false
       - key: STRIPE_PUBLISHABLE_KEY
