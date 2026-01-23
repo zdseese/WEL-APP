@@ -166,13 +166,19 @@
         const result = await createUser(username, password, email);
         if(result.success){
           errorMessage.style.color = '#2e7d32';
-          errorMessage.textContent = 'Account created! Redirecting...';
+          errorMessage.textContent = 'Account created! Logging you in...';
           
-          sessionStorage.setItem('pendingUser', JSON.stringify({ username, password }));
-          
-          setTimeout(()=>{
-            window.location.href = 'signup-details.html';
-          }, 1000);
+          // Auto-login after signup
+          const loginSuccess = await login(username, password);
+          if (loginSuccess) {
+            sessionStorage.setItem('pendingUser', JSON.stringify({ username, password }));
+            setTimeout(()=>{
+              window.location.href = 'signup-details.html';
+            }, 1000);
+          } else {
+            errorMessage.style.color = '#d32f2f';
+            errorMessage.textContent = 'Account created but login failed. Please try logging in manually.';
+          }
         } else {
           errorMessage.style.color = '#d32f2f';
           errorMessage.textContent = result.error;
