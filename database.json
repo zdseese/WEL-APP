@@ -11,11 +11,98 @@
         "stripeCustomerId": null,
         "stripeSubscriptionId": null,
         "currentPeriodEnd": null
+      },
+      "organization": "seese",
+      "jobTitle": "mom",
+      "phone": "(724) 732-1892",
+      "hearAboutUs": "facebook",
+      "profileCompleted": true
+    },
+    "zaney": {
+      "username": "zaney",
+      "password": "0c16a9b7e1cd664bc7a9aba052537a86dc3ccf9fbe19f9247dda695580545cd8",
+      "email": "zdseese4@gmail.com",
+      "createdAt": "2026-01-22T20:38:41.546564",
+      "subscription": {
+        "plan": "free",
+        "status": "active",
+        "stripeCustomerId": null,
+        "stripeSubscriptionId": null
+      }
+    },
+    "lex": {
+      "username": "lex",
+      "password": "0c16a9b7e1cd664bc7a9aba052537a86dc3ccf9fbe19f9247dda695580545cd8",
+      "email": "lexieseese@gmail.com",
+      "createdAt": "2026-01-22T22:15:34.791866",
+      "subscription": {
+        "plan": "free",
+        "status": "active",
+        "stripeCustomerId": null,
+        "stripeSubscriptionId": null
       }
     }
   },
   "profiles": {},
-  "scorecards": {},
+  "scorecards": {
+    "admin": {
+      "average": 2.6666666666666665,
+      "categories": [
+        "Relationships",
+        "Work/Life Balance",
+        "Social Impact"
+      ],
+      "createdAt": "2026-01-23T03:18:07.872Z",
+      "details": {
+        "Relationships": {
+          "baseline": "gdfgfdgd",
+          "goals": "agfgfgd",
+          "obstacles": "dfgdfgdf",
+          "steps": "fgdfgdfgdf"
+        },
+        "Social Impact": {
+          "baseline": "dfgdfgd",
+          "goals": "dfgdfg",
+          "obstacles": "dfgdfg",
+          "steps": "dfgdfg"
+        },
+        "Work/Life Balance": {
+          "baseline": "dfgdfgdf",
+          "goals": "dfgdfgd",
+          "obstacles": "ddfgdfgdf",
+          "steps": "dfgdfgdf"
+        }
+      },
+      "history": [
+        {
+          "average": 1.6666666666666667,
+          "date": "1/22/2026",
+          "ratings": {
+            "Relationships": 1,
+            "Social Impact": 1,
+            "Work/Life Balance": 3
+          },
+          "timestamp": "2026-01-23T03:18:18.713Z"
+        },
+        {
+          "ratings": {
+            "Relationships": 1,
+            "Work/Life Balance": 5,
+            "Social Impact": 2
+          },
+          "average": 2.6666666666666665,
+          "timestamp": "2026-01-23T03:18:42.448Z",
+          "date": "1/22/2026"
+        }
+      ],
+      "ratings": {
+        "Relationships": 1,
+        "Work/Life Balance": 5,
+        "Social Impact": 2
+      },
+      "submittedAt": "2026-01-23T03:18:42.448Z"
+    }
+  },
   "discussions": {},
   "calendar": {},
   "messages": {}

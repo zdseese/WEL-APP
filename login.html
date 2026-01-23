@@ -9,13 +9,13 @@
 </head>
 <body>
   <header class="site-header">
-    <div class="site-logo" aria-hidden="true">
+    <a href="/" class="site-logo" style="text-decoration: none; color: inherit;">
       <img src="white WEL Logo.png" alt="WEL logo" class="site-logo-img" />
-    </div>
+    </a>
   </header>
   <div class="login-container">
     <h1>Welcome</h1>
-    <p class="login-subtitle">Sign in to access your scorecard</p>
+    <p class="login-subtitle">Sign in to access your account</p>
     <form id="loginForm" class="login-form">
       <div class="form-group">
         <label for="username">Username</label>
@@ -25,14 +25,15 @@
         <label for="password">Password</label>
         <input type="password" id="password" name="password" required autocomplete="current-password" />
       </div>
-      <div class="form-group" style="display: flex; align-items: center; margin-top: -10px;">
-        <input type="checkbox" id="showPassword" style="width: auto; margin-right: 8px;">
-        <label for="showPassword" style="margin: 0; cursor: pointer; font-size: 14px;">Show password</label>
+      <div class="form-group" style="display: flex; align-items: center; justify-content: flex-start; margin-top: -10px; padding-left: 0;">
+        <input type="checkbox" id="showPassword" style="width: 18px; height: 18px; margin: 0 8px 0 0; cursor: pointer;">
+        <label for="showPassword" style="margin: 0; cursor: pointer; font-size: 14px; user-select: none;">Show password</label>
       </div>
       <div id="errorMessage" class="error-message"></div>
       <button type="submit" class="login-btn">Sign In</button>
     </form>
     <p class="auth-footer">Don't have an account? <a href="signup.html" class="auth-link">Create one</a></p>
+    <p class="auth-footer" style="margin-top: 10px;"><a href="forgot-password.html" class="auth-link">Forgot password?</a></p>
   </div>
   <script>
     // Toggle password visibility

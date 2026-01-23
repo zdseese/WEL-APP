@@ -1,31 +1,50 @@
 (function(){
   if(window.location.pathname.includes('dashboard.html')){
-    const displayName = window.currentUserDisplayName || window.currentUser;
-    document.getElementById('welcomeMsg').textContent = `Welcome, ${displayName}!`;
+    // Wait for auth to be ready before accessing user info
+    setTimeout(() => {
+      const displayName = window.currentUserDisplayName || window.currentUser;
+      if(displayName) {
+        document.getElementById('welcomeMsg').textContent = `Welcome, ${displayName}!`;
+      }
+      
+      // Show user management card for admins only
+      if(window.isAdmin) {
+        const userMgmtCard = document.getElementById('userManagementCard');
+        if(userMgmtCard) {
+          userMgmtCard.style.display = 'block';
+        }
+      }
+    }, 100);
     
     // Check if user has scorecard history and show button
-    const currentUser = window.currentUser;
-    const viewHistoryBtn = document.getElementById('viewHistoryFromDashboard');
-    
-    if(currentUser && viewHistoryBtn) {
-      // Check backend for saved scorecard data
-      try {
-        const response = await fetch('/api/scorecard', { credentials: 'same-origin' });
-        if (response.ok) {
-          const data = await response.json();
-          if(data && data.history && data.history.length > 0) {
-            viewHistoryBtn.style.display = 'inline-block';
-            
-            viewHistoryBtn.addEventListener('click', function() {
-              // Redirect to scorecard page with history flag
-              window.location.href = 'index.html?showHistory=true';
-            });
+    setTimeout(async () => {
+      const currentUser = window.currentUser;
+      const viewHistoryBtn = document.getElementById('viewHistoryFromDashboard');
+      
+      if(currentUser && viewHistoryBtn) {
+        // Check backend for saved scorecard data
+        try {
+          const authToken = localStorage.getItem('authToken');
+          const response = await fetch('/api/scorecard', { 
+            credentials: 'same-origin',
+            headers: authToken ? { 'Authorization': authToken } : {}
+          });
+          if (response.ok) {
+            const data = await response.json();
+            if(data && data.history && data.history.length > 0) {
+              viewHistoryBtn.style.display = 'inline-block';
+              
+              viewHistoryBtn.addEventListener('click', function() {
+                // Redirect to scorecard page with history flag
+                window.location.href = 'index.html?showHistory=true';
+              });
+            }
           }
+        } catch (error) {
+          console.error('Error checking scorecard history:', error);
         }
-      } catch (error) {
-        console.error('Error checking scorecard history:', error);
       }
-    }
+    }, 200);
 
     // Load and display subscription information
     loadSubscriptionInfo();

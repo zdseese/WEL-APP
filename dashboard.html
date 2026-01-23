@@ -8,9 +8,9 @@
 </head>
 <body>
   <header class="site-header">
-    <div class="site-logo" aria-hidden="true">
+    <a href="dashboard.html" class="site-logo" style="text-decoration: none; color: inherit;">
       <img src="white WEL Logo.png" alt="WEL logo" class="site-logo-img" />
-    </div>
+    </a>
     <div class="user-info" id="userInfo"></div>
   </header>
   <div class="container">
@@ -63,9 +63,14 @@
         <a href="calendar.html" class="btn-primary">Go to Events</a>
       </div>
       <div class="dashboard-card">
-        <h3> Profile</h3>
+        <h3>👤 Profile</h3>
         <p>Update your name, photo, and bio</p>
         <a href="profile.html" class="btn-primary">Edit Profile</a>
+      </div>
+      <div class="dashboard-card" id="userManagementCard" style="display: none;">
+        <h3>👥 User Management</h3>
+        <p>Manage users, subscriptions, and access control</p>
+        <a href="user-management.html" class="btn-primary">Manage Users</a>
       </div>
     </div>
   </div>

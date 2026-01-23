@@ -1,13 +1,17 @@
 (function(){
   let currentAuthState = null;
+  let authToken = localStorage.getItem('authToken');
   
   // API helper function with simple caching
   const apiCache = {};
   async function apiCall(endpoint, method = 'GET', body = null) {
     const cacheKey = `${method}:${endpoint}`;
     
-    // Return cached GET requests if available
-    if (method === 'GET' && apiCache[cacheKey]) {
+    // Don't cache GET requests for auth endpoints - they need to be real-time
+    const isAuthEndpoint = endpoint.includes('/api/auth/');
+    
+    // Return cached GET requests if available (except auth endpoints)
+    if (method === 'GET' && !isAuthEndpoint && apiCache[cacheKey]) {
       return apiCache[cacheKey];
     }
     
@@ -18,6 +22,11 @@
       },
       credentials: 'same-origin'
     };
+    
+    // Add auth token if available
+    if (authToken) {
+      options.headers['Authorization'] = authToken;
+    }
     
     if (body) {
       options.body = JSON.stringify(body);
@@ -30,10 +39,19 @@
       throw new Error(data.error || 'Request failed');
     }
     
-    // Cache successful GET requests for 30 seconds
-    if (method === 'GET') {
+    // Cache successful GET requests for 30 seconds (except auth endpoints)
+    if (method === 'GET' && !isAuthEndpoint) {
       apiCache[cacheKey] = data;
       setTimeout(() => delete apiCache[cacheKey], 30000);
+    }
+    
+    // Clear auth cache on POST/PUT/DELETE to auth endpoints
+    if (method !== 'GET' && isAuthEndpoint) {
+      Object.keys(apiCache).forEach(key => {
+        if (key.includes('/api/auth/')) {
+          delete apiCache[key];
+        }
+      });
     }
     
     return data;
@@ -101,11 +119,14 @@
     try {
       const data = await apiCall('/api/auth/login', 'POST', { username, password });
       if (data.success) {
+        authToken = data.token;
+        localStorage.setItem('authToken', authToken);
         currentAuthState = {
           loggedIn: true,
           username: data.username,
           email: data.email,
-          isAdmin: data.isAdmin
+          isAdmin: data.isAdmin,
+          subscription: data.subscription
         };
         return true;
       }
@@ -146,8 +167,54 @@
     } catch (error) {
       console.error('Logout error:', error);
     }
+    authToken = null;
+    localStorage.removeItem('authToken');
     currentAuthState = null;
     window.location.href = 'login.html';
+  }
+
+  // Populate user info in header
+  async function populateUserInfo() {
+    exposeUserInfo();
+    
+    const userInfoEl = document.getElementById('userInfo');
+    if(userInfoEl && isAuthenticated()){
+      // Get profile picture from backend
+      let picture = 'data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect fill=%27%23e0e0e0%27 width=%27100%27 height=%27100%27/%3E%3Ccircle cx=%2750%27 cy=%2730%27 r=%2715%27 fill=%27%23999%27/%3E%3Cpath d=%27M 20 60 Q 20 50 50 50 Q 80 50 80 60 L 80 100 L 20 100 Z%27 fill=%27%23999%27/%3E%3C/svg%3E';
+      
+      try {
+        const profile = await apiCall('/api/profile');
+        if (profile.picture) {
+          picture = profile.picture;
+        }
+        if (profile.displayName) {
+          window.currentUserDisplayName = profile.displayName;
+        }
+      } catch (error) {
+        console.error('Error loading profile:', error);
+      }
+      
+      const html = `
+        <div class="user-info-section">
+          <div class="user-info-name">${window.currentUserDisplayName || window.currentUser}</div>
+          <a href="profile.html">
+            <img src="${picture}" alt="Profile" class="user-info-pic" />
+          </a>
+          <button class="logout-btn" onclick="window.scorecardLogout()">Logout</button>
+        </div>
+      `;
+      userInfoEl.innerHTML = html;
+    }
+  }
+  
+  function exposeUserInfo(){
+    if(isAuthenticated()){
+      window.currentUser = getCurrentUser();
+      window.currentUserEmail = currentAuthState.email;
+      window.currentUserDisplayName = currentAuthState.username;
+      window.isAdmin = isAdmin();
+      window.currentSubscription = getSubscription();
+    }
   }
 
   // Initialize auth state and handle page routing
@@ -292,6 +359,13 @@
         return;
       }
     }
+    
+    // Populate user info after auth check is complete
+    if(document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => populateUserInfo());
+    } else {
+      populateUserInfo();
+    }
   }
 
   // Initialize on page load
@@ -299,17 +373,6 @@
 
   // Expose functions to window
   window.scorecardLogout = logout;
-  
-  // Expose user info
-  function exposeUserInfo(){
-    if(isAuthenticated()){
-      window.currentUser = getCurrentUser();
-      window.currentUserEmail = currentAuthState.email;
-      window.currentUserDisplayName = currentAuthState.username;
-      window.isAdmin = isAdmin();
-      window.currentSubscription = getSubscription();
-    }
-  }
   
   exposeUserInfo();
   
@@ -324,38 +387,4 @@
   window.auth.getSubscription = getSubscription;
   window.auth.hasSubscription = hasSubscription;
   window.auth.canAccessFeature = canAccessFeature;
-  
-  // Populate user info in header (auth already checked in initAuth, no need to check again)
-  window.addEventListener('DOMContentLoaded', async () => {
-    exposeUserInfo();
-    
-    const userInfoEl = document.getElementById('userInfo');
-    if(userInfoEl && isAuthenticated()){
-      // Get profile picture from backend
-      let picture = 'data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect fill=%27%23e0e0e0%27 width=%27100%27 height=%27100%27/%3E%3Ccircle cx=%2750%27 cy=%2730%27 r=%2715%27 fill=%27%23999%27/%3E%3Cpath d=%27M 20 60 Q 20 50 50 50 Q 80 50 80 60 L 80 100 L 20 100 Z%27 fill=%27%23999%27/%3E%3C/svg%3E';
-      
-      try {
-        const profile = await apiCall('/api/profile');
-        if (profile.picture) {
-          picture = profile.picture;
-        }
-        if (profile.displayName) {
-          window.currentUserDisplayName = profile.displayName;
-        }
-      } catch (error) {
-        console.error('Error loading profile:', error);
-      }
-      
-      const html = `
-        <div class="user-info-section">
-          <div class="user-info-name">${window.currentUserDisplayName}</div>
-          <a href="profile.html">
-            <img src="${picture}" alt="Profile" class="user-info-pic" />
-          </a>
-          <button class="logout-btn" onclick="window.scorecardLogout()">Logout</button>
-        </div>
-      `;
-      userInfoEl.innerHTML = html;
-    }
-  });
 })();

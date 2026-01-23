@@ -2,13 +2,16 @@ from flask import Flask, request, jsonify, session, send_from_directory
 import json
 import os
 import hashlib
+import secrets
 from datetime import datetime, timedelta
 import stripe
 
 app = Flask(__name__, static_folder='.')
 app.secret_key = 'scorecard-secret-key-2026-flask'
-app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=1)
+
+# Simple in-memory token storage (use Redis in production)
+active_tokens = {}
+password_reset_tokens = {}  # Store reset tokens with expiration
 
 # Stripe Configuration
 STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY', 'sk_test_YOUR_SECRET_KEY_HERE')
@@ -131,15 +134,28 @@ def static_files(path):
 
 @app.route('/api/auth/status', methods=['GET'])
 def auth_status():
-    if 'user_id' in session:
-        user = db['users'].get(session['user_id'])
+    token = request.headers.get('Authorization') or request.cookies.get('auth_token')
+    print(f"Auth status check - token: {token}")
+    
+    if token and token in active_tokens:
+        username = active_tokens[token]
+        user = db['users'].get(username)
+        print(f"User found: {user['username'] if user else 'None'}")
         if user:
             return jsonify({
                 'loggedIn': True,
                 'username': user['username'],
                 'email': user['email'],
-                'isAdmin': user['username'] == 'admin'
+                'isAdmin': user['username'] == 'admin',
+                'subscription': user.get('subscription', {
+                    'plan': 'free',
+                    'status': 'active',
+                    'stripeCustomerId': None,
+                    'stripeSubscriptionId': None,
+                    'currentPeriodEnd': None
+                })
             })
+    print("No valid token - returning not logged in")
     return jsonify({'loggedIn': False})
 
 @app.route('/api/auth/login', methods=['POST'])
@@ -155,15 +171,32 @@ def login():
     if not verify_password(password, user['password']):
         return jsonify({'success': False, 'error': 'Invalid username or password'}), 401
     
-    session['user_id'] = username
-    session.permanent = True
+    # Generate a unique token
+    token = secrets.token_urlsafe(32)
+    active_tokens[token] = username
     
-    return jsonify({
+    print(f"Login successful - generated token for: {username}")
+    print(f"Active tokens: {len(active_tokens)}")
+    
+    response = jsonify({
         'success': True,
         'username': user['username'],
         'email': user['email'],
-        'isAdmin': user['username'] == 'admin'
+        'isAdmin': user['username'] == 'admin',
+        'token': token,
+        'subscription': user.get('subscription', {
+            'plan': 'free',
+            'status': 'active',
+            'stripeCustomerId': None,
+            'stripeSubscriptionId': None,
+            'currentPeriodEnd': None
+        })
     })
+    
+    # Also set as cookie for convenience
+    response.set_cookie('auth_token', token, max_age=86400, httponly=False, samesite='Lax')
+    
+    return response
 
 @app.route('/api/auth/signup', methods=['POST'])
 def signup():
@@ -228,8 +261,104 @@ def update_details():
 
 @app.route('/api/auth/logout', methods=['POST'])
 def logout():
-    session.clear()
-    return jsonify({'success': True})
+    token = request.headers.get('Authorization') or request.cookies.get('auth_token')
+    if token and token in active_tokens:
+        del active_tokens[token]
+    response = jsonify({'success': True})
+    response.set_cookie('auth_token', '', expires=0)
+    return response
+
+@app.route('/api/auth/forgot-password', methods=['POST'])
+def forgot_password():
+    data = request.json
+    email = data.get('email', '').strip().lower()
+    
+    if not email or '@' not in email:
+        return jsonify({'success': False, 'error': 'Valid email is required'}), 400
+    
+    # Find user by email
+    user = None
+    username = None
+    for uname, udata in db['users'].items():
+        if udata.get('email', '').lower() == email:
+            user = udata
+            username = uname
+            break
+    
+    # Always return success to prevent email enumeration
+    if not user:
+        print(f"Password reset requested for non-existent email: {email}")
+        return jsonify({'success': True, 'message': 'If an account exists with that email, a reset link has been sent'})
+    
+    # Generate reset token
+    reset_token = secrets.token_urlsafe(32)
+    password_reset_tokens[reset_token] = {
+        'username': username,
+        'email': email,
+        'expires': (datetime.now() + timedelta(hours=1)).isoformat()
+    }
+    
+    # Create reset link
+    reset_link = f"{APP_URL}/reset-password.html?token={reset_token}"
+    
+    # In production, send actual email. For now, just log it
+    print(f"\n{'='*60}")
+    print(f"PASSWORD RESET REQUEST")
+    print(f"{'='*60}")
+    print(f"Email: {email}")
+    print(f"Username: {username}")
+    print(f"Reset Link: {reset_link}")
+    print(f"Token expires in 1 hour")
+    print(f"{'='*60}\n")
+    
+    # TODO: Integrate with email service (SendGrid, AWS SES, etc.)
+    # send_email(
+    #     to=email,
+    #     subject="Reset Your Password - Scorecard",
+    #     body=f"Click here to reset your password: {reset_link}\n\nThis link expires in 1 hour."
+    # )
+    
+    return jsonify({'success': True, 'message': 'Password reset link sent to your email'})
+
+@app.route('/api/auth/reset-password', methods=['POST'])
+def reset_password():
+    data = request.json
+    token = data.get('token')
+    new_password = data.get('newPassword')
+    
+    if not token or not new_password:
+        return jsonify({'success': False, 'error': 'Token and new password are required'}), 400
+    
+    if len(new_password) < 6:
+        return jsonify({'success': False, 'error': 'Password must be at least 6 characters'}), 400
+    
+    # Check if token exists and is valid
+    if token not in password_reset_tokens:
+        return jsonify({'success': False, 'error': 'Invalid or expired reset token'}), 400
+    
+    token_data = password_reset_tokens[token]
+    
+    # Check if token has expired
+    expires = datetime.fromisoformat(token_data['expires'])
+    if datetime.now() > expires:
+        del password_reset_tokens[token]
+        return jsonify({'success': False, 'error': 'Reset token has expired'}), 400
+    
+    username = token_data['username']
+    
+    # Update user password
+    if username not in db['users']:
+        return jsonify({'success': False, 'error': 'User not found'}), 404
+    
+    db['users'][username]['password'] = hash_password(new_password)
+    save_db()
+    
+    # Delete the used token
+    del password_reset_tokens[token]
+    
+    print(f"Password successfully reset for user: {username}")
+    
+    return jsonify({'success': True, 'message': 'Password has been reset successfully'})
 
 @app.route('/api/profile', methods=['GET'])
 def get_profile():
@@ -277,7 +406,15 @@ def delete_account():
 
 @app.route('/api/admin/users', methods=['GET'])
 def get_all_users():
-    if 'user_id' not in session or session['user_id'] != 'admin':
+    # Check for token-based auth
+    auth_header = request.headers.get('Authorization')
+    token = auth_header.split(' ')[1] if auth_header and auth_header.startswith('Bearer ') else None
+    
+    if not token or token not in active_tokens:
+        return jsonify({'error': 'Admin access required'}), 403
+    
+    user_id = active_tokens[token]
+    if user_id != 'admin':
         return jsonify({'error': 'Admin access required'}), 403
     
     users = [
@@ -300,6 +437,88 @@ def get_all_users():
     ]
     
     return jsonify(users)
+
+@app.route('/api/admin/users/<username>', methods=['DELETE'])
+def delete_user():
+    # Check for token-based auth
+    auth_header = request.headers.get('Authorization')
+    token = auth_header.split(' ')[1] if auth_header and auth_header.startswith('Bearer ') else None
+    
+    if not token or token not in active_tokens:
+        return jsonify({'error': 'Admin access required'}), 403
+    
+    user_id = active_tokens[token]
+    if user_id != 'admin':
+        return jsonify({'error': 'Admin access required'}), 403
+    
+    username = request.view_args.get('username')
+    
+    if username == 'admin':
+        return jsonify({'error': 'Cannot delete admin user'}), 400
+    
+    if username not in db['users']:
+        return jsonify({'error': 'User not found'}), 404
+    
+    # Delete user and associated data
+    del db['users'][username]
+    
+    # Delete user's scorecard if exists
+    if 'scorecards' in db and username in db['scorecards']:
+        del db['scorecards'][username]
+    
+    # Delete user's posts if exists
+    if 'posts' in db:
+        db['posts'] = [p for p in db['posts'] if p.get('author') != username]
+    
+    save_db()
+    
+    return jsonify({'success': True})
+
+@app.route('/api/admin/users/<username>/reset-password', methods=['POST'])
+def admin_reset_password():
+    # Check for token-based auth
+    auth_header = request.headers.get('Authorization')
+    token = auth_header.split(' ')[1] if auth_header and auth_header.startswith('Bearer ') else None
+    
+    if not token or token not in active_tokens:
+        return jsonify({'error': 'Admin access required'}), 403
+    
+    user_id = active_tokens[token]
+    if user_id != 'admin':
+        return jsonify({'error': 'Admin access required'}), 403
+    
+    username = request.view_args.get('username')
+    data = request.json
+    new_password = data.get('newPassword')
+    
+    if not new_password or len(new_password) < 6:
+        return jsonify({'error': 'Password must be at least 6 characters'}), 400
+    
+    if username not in db['users']:
+        return jsonify({'error': 'User not found'}), 404
+    
+    db['users'][username]['password'] = hash_password(new_password)
+    save_db()
+    
+    return jsonify({'success': True})
+
+@app.route('/api/admin/users/<username>/scorecard', methods=['GET'])
+def get_user_scorecard():
+    # Check for token-based auth
+    auth_header = request.headers.get('Authorization')
+    token = auth_header.split(' ')[1] if auth_header and auth_header.startswith('Bearer ') else None
+    
+    if not token or token not in active_tokens:
+        return jsonify({'error': 'Admin access required'}), 403
+    
+    user_id = active_tokens[token]
+    if user_id != 'admin':
+        return jsonify({'error': 'Admin access required'}), 403
+    
+    username = request.view_args.get('username')
+    scorecard = db.get('scorecards', {}).get(username, {})
+    
+    return jsonify(scorecard)
 
 # Scorecard/Metrics API
 @app.route('/api/scorecard', methods=['GET'])

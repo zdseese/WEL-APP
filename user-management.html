@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>User Management - Scorecard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <a href="dashboard.html" class="site-logo" style="text-decoration: none; color: inherit;">
+      <img src="white WEL Logo.png" alt="WEL logo" class="site-logo-img" />
+    </a>
+    <div class="user-info" id="userInfo"></div>
+  </header>
+  <div class="container">
+    <div class="page-header">
+      <h1>User Management</h1>
+      <div class="page-actions">
+        <a href="dashboard.html" class="nav-btn">Back to Dashboard</a>
+      </div>
+    </div>
+    <nav class="dashboard-nav">
+      <a href="dashboard.html" class="nav-link">Dashboard</a>
+      <a href="index.html" class="nav-link">Scorecard</a>
+      <a href="discussion.html" class="nav-link">Discussion</a>
+      <a href="calendar.html" class="nav-link">Events</a>
+    </nav>
+    
+    <div class="user-management-container">
+      <div class="stats-overview">
+        <div class="stat-card">
+          <div class="stat-value" id="totalUsers">0</div>
+          <div class="stat-label">Total Users</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="activeSubscriptions">0</div>
+          <div class="stat-label">Active Subscriptions</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="freeUsers">0</div>
+          <div class="stat-label">Free Plan Users</div>
+        </div>
+      </div>
+
+      <div class="users-table-section">
+        <h2>All Users</h2>
+        <div class="user-table-container">
+          <table class="user-table" id="usersTable">
+            <thead>
+              <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Organization</th>
+                <th>Subscription</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody">
+              <tr>
+                <td colspan="7" style="text-align: center; padding: 40px; color: #999;">Loading users...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- User Details Modal -->
+  <div id="userModal" class="modal">
+    <div class="modal-content" style="max-width: 700px;">
+      <div class="modal-header">
+        <h2>User Details</h2>
+        <span class="close" onclick="closeUserModal()">&times;</span>
+      </div>
+      <div class="modal-body" id="userModalBody">
+        <!-- User details will be loaded here -->
+      </div>
+    </div>
+  </div>
+
+  <script src="auth.js"></script>
+  <script src="user-management.js"></script>
+</body>
+</html>
