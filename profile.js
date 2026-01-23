@@ -55,10 +55,14 @@
       if(adminLink) adminLink.style.display = 'inline-block';
     }
 
-    // Load profile
+    // Load profile (only once on page load)
     const currentUser = window.currentUser;
+    let profileLoaded = false;
     
     (async function loadProfile() {
+      if (profileLoaded) return;
+      profileLoaded = true;
+      
       try {
         const profile = await getProfile();
         nameInput.value = profile.displayName || '';
@@ -69,6 +73,7 @@
         }
       } catch (error) {
         console.error('Error loading profile:', error);
+        profileLoaded = false;
       }
     })();
 

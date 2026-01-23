@@ -1,8 +1,16 @@
 (function(){
   let currentAuthState = null;
   
-  // API helper function
+  // API helper function with simple caching
+  const apiCache = {};
   async function apiCall(endpoint, method = 'GET', body = null) {
+    const cacheKey = `${method}:${endpoint}`;
+    
+    // Return cached GET requests if available
+    if (method === 'GET' && apiCache[cacheKey]) {
+      return apiCache[cacheKey];
+    }
+    
     const options = {
       method,
       headers: {
@@ -20,6 +28,12 @@
     
     if (!response.ok) {
       throw new Error(data.error || 'Request failed');
+    }
+    
+    // Cache successful GET requests for 30 seconds
+    if (method === 'GET') {
+      apiCache[cacheKey] = data;
+      setTimeout(() => delete apiCache[cacheKey], 30000);
     }
     
     return data;
@@ -138,12 +152,24 @@
 
   // Initialize auth state and handle page routing
   async function initAuth() {
+    // First check auth status before any routing decisions
     await checkAuthStatus();
+    
+    // Now handle page-specific logic after we know auth state
+    const currentPath = window.location.pathname;
+    const protectedPages = ['index.html', 'dashboard.html', 'discussion.html', 'calendar.html', 'profile.html'];
+    const publicPages = ['login.html', 'signup.html', 'signup-details.html'];
+    
+    // If on a protected page and not authenticated, redirect to login
+    if((protectedPages.some(page => currentPath.includes(page)) || currentPath.endsWith('/')) && !isAuthenticated()){
+      window.location.href = 'login.html';
+      return;
+    }
 
     // Signup page
     if(window.location.pathname.includes('signup.html')){
       if(isAuthenticated()){
-        window.location.href = 'index.html';
+        window.location.href = 'dashboard.html';
         return;
       }
 
@@ -218,7 +244,7 @@
           const loginSuccess = await login(username, password);
           if (loginSuccess) {
             setTimeout(()=>{
-              window.location.href = 'index.html';
+              window.location.href = 'dashboard.html';
             }, 1500);
           }
         } else {
@@ -232,7 +258,7 @@
     // Login page
     if(window.location.pathname.includes('login.html')){
       if(isAuthenticated()){
-        window.location.href = 'index.html';
+        window.location.href = 'dashboard.html';
         return;
       }
 
@@ -246,29 +272,12 @@
 
         const success = await login(username, password);
         if(success){
-          window.location.href = 'index.html';
+          window.location.href = 'dashboard.html';
         } else {
           errorMessage.textContent = 'Invalid username or password';
           setTimeout(()=> errorMessage.textContent = '', 3000);
         }
       });
-    }
-
-    // Protected pages
-    const protectedPages = ['index.html', 'dashboard.html', 'discussion.html', 'calendar.html', 'profile.html'];
-    const publicPages = ['login.html', 'signup.html', 'signup-details.html'];
-    const currentPath = window.location.pathname;
-    
-    // Skip authentication check for public pages
-    if(publicPages.some(page => currentPath.includes(page))){
-      return;
-    }
-    
-    if(protectedPages.some(page => currentPath.includes(page)) || currentPath.endsWith('/')){
-      if(!isAuthenticated()){
-        window.location.href = 'login.html';
-        return;
-      }
     }
 
     // Admin page
@@ -279,7 +288,7 @@
       }
       if(!isAdmin()){
         alert('Access denied. Admin privileges required.');
-        window.location.href = 'index.html';
+        window.location.href = 'dashboard.html';
         return;
       }
     }
@@ -316,9 +325,8 @@
   window.auth.hasSubscription = hasSubscription;
   window.auth.canAccessFeature = canAccessFeature;
   
-  // Populate user info in header
+  // Populate user info in header (auth already checked in initAuth, no need to check again)
   window.addEventListener('DOMContentLoaded', async () => {
-    await checkAuthStatus();
     exposeUserInfo();
     
     const userInfoEl = document.getElementById('userInfo');

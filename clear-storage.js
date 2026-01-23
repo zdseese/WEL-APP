@@ -14,8 +14,8 @@
     localStorage.removeItem(key);
   });
   
-  // Clear sessionStorage too
-  sessionStorage.clear();
+  // Don't clear sessionStorage - it's needed for proper session management
+  // sessionStorage.clear();
   
   console.log('✓ Cleared old localStorage data. Now using backend database.');
 })();
