@@ -568,9 +568,10 @@ def stripe_webhook():
     return jsonify({'success': True})
 
 if __name__ == '__main__':
-    print('\n🚀 Server running at http://localhost:8000')
+    port = int(os.environ.get('PORT', 8000))
+    print('\n🚀 Server running at http://localhost:{}'.format(port))
     print('📁 Serving files from:', os.getcwd())
     print('\nDefault admin credentials:')
     print('  Username: admin')
     print('  Password: scorecard2026\n')
-    app.run(host='0.0.0.0', port=8000, debug=True)
+    app.run(host='0.0.0.0', port=port, debug=False)
