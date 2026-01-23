@@ -250,7 +250,13 @@
 
     // Protected pages
     const protectedPages = ['index.html', 'dashboard.html', 'discussion.html', 'calendar.html', 'profile.html'];
+    const publicPages = ['login.html', 'signup.html', 'signup-details.html'];
     const currentPath = window.location.pathname;
+    
+    // Skip authentication check for public pages
+    if(publicPages.some(page => currentPath.includes(page))){
+      return;
+    }
     
     if(protectedPages.some(page => currentPath.includes(page)) || currentPath.endsWith('/')){
       if(!isAuthenticated()){
